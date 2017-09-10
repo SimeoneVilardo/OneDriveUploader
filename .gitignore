@@ -101,3 +101,6 @@ ENV/
 .mypy_cache/
 /OneDriveUploader/config.py
 /OneDriveUploader/config_secrets.py
+
+#.env file
+/OneDriveUploader/.env

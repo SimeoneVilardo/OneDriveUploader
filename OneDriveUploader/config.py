@@ -1,3 +1,9 @@
+from os.path import join, dirname
+from dotenv import load_dotenv, find_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(find_dotenv())
+
 client = dict(id = '8dfcc6ca-304f-4351-a2c9-299e72eb8605')
 
 urls = dict(redirect = 'http://localhost:8080',
