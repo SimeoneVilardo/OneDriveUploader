@@ -17,7 +17,7 @@ def main():
         od_engine.login_business(config.urls['redirect'], config.client['id'], config_secrets.client['secret'], config.urls['discovery'], config.urls['auth_server'], config.urls['auth_token'])
     print('Login completed')
     input_path = input('Path: ')
-    od_engine.create_dir_structure(input_path)
+    od_engine.create_folder_structure(input_path)
     print('Tree structure created')
   
 if __name__ == "__main__":
