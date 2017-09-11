@@ -24,9 +24,6 @@
     <Compile Include="config.py">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="config_secrets.py">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="enums.py">
       <SubType>Code</SubType>
     </Compile>
@@ -34,6 +31,11 @@
     <Compile Include="one_drive_engine.py">
       <SubType>Code</SubType>
     </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include=".env">
+      <SubType>Code</SubType>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in
