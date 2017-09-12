@@ -12,7 +12,15 @@ class OneDriveEngine():
     Ottiene una lista di stringhe che contiene tutte le cartelle che formano il percorso del parametro path.
     '''
     def get_dir_components(self, path):
-        return os.path.normpath(path).split(os.path.sep)
+        if path != None:
+            dir_components_raw =  os.path.normpath(path).split(os.path.sep)
+            dir_components = [x for x in dir_components_raw if x != '']
+            return dir_components
+        else:
+            return ''
+
+    def get_basename(self, path):
+        return os.path.basename(path).replace(os.path.sep, '')
 
     '''
     Ottiene una lista di stringhe che contiene tutte le cartelle contenute nella cartella specificata nel parametro path.
@@ -20,10 +28,7 @@ class OneDriveEngine():
     e proseguendo fino alla cartella più interna.
     '''
     def get_all_dirs(self, path):
-        dirs = list()
-        for root, subdirs, files in os.walk(path):
-            dirs.append(root)
-        return dirs
+        return [root for root, subdirs, files in os.walk(path)]
 
     '''
     Ottiene un oggetto di tipo cartella da OneDrive il cui id corrisponde all'id specificato nel parametro id.
@@ -80,6 +85,7 @@ class OneDriveEngine():
     Il dato ritornato è l'oggetto di tipo cartella appena inserito.
     '''
     def create_folder_by_name(self, parent, name):
+        parent = parent if parent != None else self.get_root_folder()
         f = onedrivesdk.Folder()
         i = onedrivesdk.Item()
         i.name = name
@@ -87,15 +93,25 @@ class OneDriveEngine():
         new_folder = parent.children.add(i)
         return self.get_folder_by_id(new_folder.id)
 
+    def create_folder_by_path(self, folder_path, start_folder_path=None):
+        current_folder = self.get_folder_by_path(start_folder_path)[1] if start_folder_path != None else self.get_root_folder()
+        folder_components = self.get_dir_components(folder_path)
+        for folder_name in folder_components:
+            current_folder_temp = self.get_folder_by_dirname(folder_name, current_folder)
+            current_folder = current_folder_temp if current_folder_temp != None else self.create_folder_by_name(current_folder, folder_name)
+        return current_folder    
+
     '''
     Crea l'intera struttura ad albero delle cartelle partendo dalla cartella specificata nel parametro dir_path all'interno
     della root o eventualmente all'interno dell'oggetto di tipo cartella specificato nel parametro start_folder.
     '''
     def create_folder_structure(self, dir_path, start_folder_path=None):
         start_folder = self.get_folder_by_path(start_folder_path) if start_folder_path != None else self.get_root_folder()
+        first_folder_name = self.get_basename(dir_path)
+        self.create_folder_by_name(start_folder, first_folder_name)
+        start_folder = self.get_folder_by_dirname(first_folder_name, start_folder)
         for root, subdirs, files in os.walk(dir_path):
-            current_folder_path = root.replace(dir_path, '')[1:] if len(root.replace(dir_path, '')) > 0 else None
-            current_folder = self.get_folder_by_path(current_folder_path, start_folder)[1] if current_folder_path != None else self.get_root_folder() #Controllare che self.get_folder_by_path(current_folder_path, start_folder)[0] sia True
+            current_folder = self.get_folder_by_path(root.replace(dir_path, '') if root != dir_path else first_folder_name, start_folder)[1]
             for subdir in subdirs:
                 self.create_folder_by_name(current_folder, subdir)
                 
@@ -110,12 +126,13 @@ class OneDriveEngine():
         auth.authenticate(code, redirect_uri, client_secret, resource=discovery_uri)
         services = ResourceDiscoveryRequest().get_service_info(auth.access_token)
         if len(services) == 0:
-            print('No service avaible. A bad thing. Really. Call Vilardo now!')
+            return False
         else:
-            service_info = ResourceDiscoveryRequest().get_service_info(auth.access_token)[0]
+            service_info = services[0]
             auth.redeem_refresh_token(service_info.service_resource_id)
             client = onedrivesdk.OneDriveClient(service_info.service_resource_id + '/_api/v2.0/', auth, http)
             self.client = client
+            return True
 
     def login(self, redirect_uri, client_id, client_secret):
         scopes = ['wl.signin', 'wl.offline_access', 'onedrive.readwrite']
@@ -124,6 +141,7 @@ class OneDriveEngine():
         code = GetAuthCodeServer.get_auth_code(auth_url, redirect_uri)
         client.auth_provider.authenticate(code, redirect_uri, client_secret)
         self.client = client
+        return True
 
 
     def upload_file(self, path):
