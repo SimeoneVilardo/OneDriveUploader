@@ -194,7 +194,11 @@ class OneDriveEngine():
         if len(services) == 0:
             return False
         else:
-            service_info = services[0]
+            for i, service in enumerate(services):
+                print('*** Menu Service ***')
+                print(str(i+1) + ' - ' + service.service_name)
+            service_num = int(input('Service number: ')) - 1     
+            service_info = services[service_num]
             auth.redeem_refresh_token(service_info.service_resource_id)
             client = onedrivesdk.OneDriveClient(service_info.service_resource_id + '/_api/v2.0/', auth, http)
             self.client = client
