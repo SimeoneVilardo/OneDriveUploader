@@ -160,11 +160,11 @@ class OneDriveEngine():
         all_dirs = self.get_all_dirs(dir_path)
         current_folder_path = all_dirs[0]
         folder_name = self.get_basename(current_folder_path)
-        current_folder = self.create_folder_by_name(folder_name, current_folder)
+        current_folder = self.create_folder_by_name(folder_name, current_folder, ignore_exists)
         all_dirs = all_dirs[1:]
         for i in range(len(all_dirs)):
             folder_name = self.get_basename(all_dirs[i])
-            self.create_folder_by_name(folder_name, current_folder)
+            self.create_folder_by_name(folder_name, current_folder, ignore_exists)
             if i < len(all_dirs)-1:
                 path_diff = self.get_diff_paths(current_folder_path, all_dirs[i+1], dir_path)
                 if path_diff[0] == 2 and path_diff[2] > 1:
