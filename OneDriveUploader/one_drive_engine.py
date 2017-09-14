@@ -191,18 +191,13 @@ class OneDriveEngine():
         code = GetAuthCodeServer.get_auth_code(auth_url, redirect_uri)
         auth.authenticate(code, redirect_uri, client_secret, resource=discovery_uri)
         services = ResourceDiscoveryRequest().get_service_info(auth.access_token)
-        if len(services) == 0:
-            return False
-        else:
-            for i, service in enumerate(services):
-                print('*** Menu Service ***')
-                print(str(i+1) + ' - ' + service.service_name)
-            service_num = int(input('Service number: ')) - 1     
-            service_info = services[service_num]
-            auth.redeem_refresh_token(service_info.service_resource_id)
-            client = onedrivesdk.OneDriveClient(service_info.service_resource_id + '/_api/v2.0/', auth, http)
-            self.client = client
-            return True
+        for service in services:
+            if service.service_id == 'O365_SHAREPOINT':    
+                auth.redeem_refresh_token(service.service_resource_id)
+                client = onedrivesdk.OneDriveClient(service.service_resource_id + '/_api/v2.0/', auth, http)
+                self.client = client
+                return True
+        return False                
 
 
     def login(self, redirect_uri, client_id, client_secret):
